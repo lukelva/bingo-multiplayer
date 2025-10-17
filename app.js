@@ -4,13 +4,14 @@
 // IMPORTANTE: Substitua esta configuração pela sua própria configuração do Firebase
 // Obtenha em: Firebase Console > Project Settings > Your apps > Firebase SDK snippet > Config
 const firebaseConfig = {
-    apiKey: "SUA_API_KEY",
-    authDomain: "SEU_PROJECT_ID.firebaseapp.com",
-    databaseURL: "https://SEU_PROJECT_ID-default-rtdb.firebaseio.com",
-    projectId: "SEU_PROJECT_ID",
-    storageBucket: "SEU_PROJECT_ID.appspot.com",
-    messagingSenderId: "SEU_MESSAGING_SENDER_ID",
-    appId: "SEU_APP_ID"
+  apiKey: "AIzaSyCeJM5XUEM9gDFf2gXS7qMad1Ec38a9ldI",
+  authDomain: "bingo-1df09.firebaseapp.com",
+  databaseURL: "https://bingo-1df09-default-rtdb.firebaseio.com",
+  projectId: "bingo-1df09",
+  storageBucket: "bingo-1df09.firebasestorage.app",
+  messagingSenderId: "969077261425",
+  appId: "1:969077261425:web:dd9d884d74e7e6b1ce07d0",
+  measurementId: "G-8ZS0T05NEZ"
 };
 
 // Inicializar Firebase
