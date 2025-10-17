@@ -1,0 +1,452 @@
+/* Reset e Estilos Globais */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    color: #333;
+}
+
+/* Telas */
+.screen {
+    display: none;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.screen.active {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Container */
+.container {
+    width: 100%;
+    max-width: 500px;
+    text-align: center;
+}
+
+/* Títulos */
+h1 {
+    color: white;
+    font-size: 2.5rem;
+    margin-bottom: 30px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+h2 {
+    color: #667eea;
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+}
+
+h3 {
+    color: #555;
+    font-size: 1.3rem;
+    margin-bottom: 15px;
+}
+
+/* Cards */
+.card {
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+/* Formulários */
+.form-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #555;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+/* Botões */
+.button-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 25px;
+}
+
+.btn {
+    flex: 1;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #5568d3 0%, #65408b 100%);
+}
+
+.btn-secondary {
+    background: #e0e0e0;
+    color: #555;
+}
+
+.btn-secondary:hover {
+    background: #d0d0d0;
+}
+
+.btn-small {
+    padding: 8px 16px;
+    font-size: 0.9rem;
+}
+
+.btn-danger {
+    background: #e74c3c;
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #c0392b;
+}
+
+.btn-bingo {
+    width: 100%;
+    margin-top: 20px;
+    padding: 15px;
+    font-size: 1.3rem;
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+/* Tela de Jogo */
+#game-screen.active {
+    display: block;
+}
+
+.game-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Cabeçalho do Jogo */
+.game-header {
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.header-info h2 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.header-info p {
+    margin: 5px 0 0 0;
+    color: #777;
+}
+
+.header-actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* Área Principal do Jogo */
+.game-main {
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    gap: 20px;
+}
+
+/* Área da Cartela */
+.card-area {
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Cartela de Bingo */
+.bingo-card {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.bingo-square {
+    aspect-ratio: 1;
+    background: #e74c3c;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 15px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s;
+    user-select: none;
+}
+
+.bingo-square:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.bingo-square.marked {
+    background: #27ae60;
+}
+
+/* Sidebar */
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.players-panel,
+.events-panel {
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.players-panel {
+    flex: 0 0 auto;
+}
+
+.events-panel {
+    flex: 1;
+    min-height: 300px;
+}
+
+/* Lista de Jogadores */
+#players-list {
+    list-style: none;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+#players-list li {
+    padding: 10px;
+    margin-bottom: 8px;
+    background: #f5f5f5;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#players-list li.winner {
+    background: #ffd700;
+    font-weight: bold;
+}
+
+#players-list li::before {
+    content: '👤';
+    font-size: 1.2rem;
+}
+
+/* Log de Eventos */
+#events-log {
+    max-height: 400px;
+    overflow-y: auto;
+    font-size: 0.9rem;
+}
+
+.event-item {
+    padding: 8px;
+    margin-bottom: 8px;
+    background: #f5f5f5;
+    border-radius: 6px;
+    border-left: 4px solid #667eea;
+}
+
+.event-item.bingo-event {
+    background: #fff3cd;
+    border-left-color: #f5576c;
+    font-weight: bold;
+}
+
+.event-timestamp {
+    color: #999;
+    font-size: 0.8rem;
+    margin-left: 5px;
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal.active {
+    display: flex;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 15px;
+    padding: 40px;
+    max-width: 500px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.modal-content p {
+    font-size: 1.5rem;
+    margin-bottom: 25px;
+    color: #333;
+}
+
+/* Toast */
+.toast {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: #333;
+    color: white;
+    padding: 15px 25px;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.3s;
+    z-index: 999;
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.toast.success {
+    background: #27ae60;
+}
+
+.toast.error {
+    background: #e74c3c;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    h1 {
+        font-size: 2rem;
+    }
+
+    .game-main {
+        grid-template-columns: 1fr;
+    }
+
+    .game-header {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .header-actions {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .bingo-square {
+        font-size: 0.85rem;
+        padding: 10px;
+    }
+
+    .button-group {
+        flex-direction: column;
+    }
+
+    .toast {
+        right: 20px;
+        left: 20px;
+        bottom: 20px;
+    }
+}
+
+/* Scrollbar Customizada */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #667eea;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #5568d3;
+}
+
