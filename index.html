@@ -7,12 +7,25 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <header class="site-header">
+        <div class="site-header__inner">
+            <div class="brand">
+                <span class="brand__name">Bingo Multiplayer</span>
+            </div>
+            <nav class="site-nav" aria-label="Navegação">
+                <a href="#" class="site-nav__link" data-target="landing">Início</a>
+                <a href="#" class="site-nav__link" data-target="createRoom">Criar Sala</a>
+                <a href="#" class="site-nav__link" data-target="joinRoom">Entrar</a>
+            </nav>
+        </div>
+    </header>
     <!-- Tela de Landing -->
     <div id="landing-screen" class="screen active">
         <div class="container">
-            <h1>🎉 Bingo Multiplayer 🎉</h1>
-            <div class="card">
+            <h1>Bingo Multiplayer</h1>
+            <div class="card card--glass">
                 <h2>Bem-vindo!</h2>
+                <p class="lead">Jogue com amigos em salas privadas e divirta-se marcando sua cartela.</p>
                 <div class="form-group">
                     <label for="username">Seu nome:</label>
                     <input type="text" id="username" placeholder="Digite seu nome" maxlength="20">
@@ -21,6 +34,7 @@
                     <button id="create-room-btn" class="btn btn-primary">Criar Sala</button>
                     <button id="join-room-btn" class="btn btn-secondary">Entrar em Sala</button>
                 </div>
+                <small class="muted">Você poderá compartilhar o link da sala com um clique.</small>
             </div>
         </div>
     </div>
@@ -29,7 +43,7 @@
     <div id="create-room-screen" class="screen">
         <div class="container">
             <h1>Criar Nova Sala</h1>
-            <div class="card">
+            <div class="card card--glass">
                 <div class="form-group">
                     <label for="room-name">Nome da Sala:</label>
                     <input type="text" id="room-name" placeholder="Digite o nome da sala" maxlength="30">
@@ -52,6 +66,7 @@
                     <button id="confirm-create-btn" class="btn btn-primary">Criar e Entrar</button>
                     <button id="cancel-create-btn" class="btn btn-secondary">Cancelar</button>
                 </div>
+                <small class="muted">Dica: use senha para evitar intrusos.</small>
             </div>
         </div>
     </div>
@@ -60,7 +75,7 @@
     <div id="join-room-screen" class="screen">
         <div class="container">
             <h1>Entrar em Sala</h1>
-            <div class="card">
+            <div class="card card--glass">
                 <div class="form-group">
                     <label for="join-room-id">ID ou Nome da Sala:</label>
                     <input type="text" id="join-room-id" placeholder="Digite o ID ou nome da sala">
@@ -73,6 +88,7 @@
                     <button id="confirm-join-btn" class="btn btn-primary">Entrar</button>
                     <button id="cancel-join-btn" class="btn btn-secondary">Cancelar</button>
                 </div>
+                <small class="muted">Se você recebeu um link, o ID será preenchido automaticamente.</small>
             </div>
         </div>
     </div>
@@ -81,32 +97,32 @@
     <div id="game-screen" class="screen">
         <div class="game-container">
             <!-- Cabeçalho -->
-            <header class="game-header">
+            <header class="game-header card--glass">
                 <div class="header-info">
                     <h2 id="room-title">Sala: <span id="current-room-name"></span></h2>
                     <p id="players-count">Jogadores: <span id="current-players">0</span> / <span id="max-players-count">0</span></p>
                 </div>
                 <div class="header-actions">
-                    <button id="copy-link-btn" class="btn btn-small">📋 Copiar Link</button>
-                    <button id="leave-room-btn" class="btn btn-small btn-danger">🚪 Sair</button>
+                    <button id="copy-link-btn" class="btn btn-small">Copiar link</button>
+                    <button id="leave-room-btn" class="btn btn-small btn-danger">Sair</button>
                 </div>
             </header>
 
             <!-- Área Principal -->
             <div class="game-main">
                 <!-- Cartela do Jogador -->
-                <div class="card-area">
+                <div class="card-area card--glass">
                     <h3>Sua Cartela</h3>
                     <div id="bingo-card" class="bingo-card">
                         <!-- Quadrados serão gerados dinamicamente -->
                     </div>
-                    <button id="bingo-btn" class="btn btn-bingo" style="display: none;">🎊 BINGO! 🎊</button>
+                    <button id="bingo-btn" class="btn btn-bingo" style="display: none;">BINGO</button>
                 </div>
 
                 <!-- Painel Lateral -->
                 <aside class="sidebar">
                     <!-- Lista de Jogadores -->
-                    <div class="players-panel">
+                    <div class="players-panel card--glass">
                         <h3>Jogadores</h3>
                         <ul id="players-list">
                             <!-- Jogadores serão listados aqui -->
@@ -114,7 +130,7 @@
                     </div>
 
                     <!-- Log de Eventos -->
-                    <div class="events-panel">
+                    <div class="events-panel card--glass">
                         <h3>Eventos</h3>
                         <div id="events-log">
                             <!-- Eventos serão listados aqui -->
@@ -136,12 +152,43 @@
     <!-- Toast de Mensagens -->
     <div id="toast" class="toast"></div>
 
+    <footer class="site-footer">
+        <div class="site-footer__inner">
+            <span class="muted">Feito com ❤️ para amigos e família.</span>
+        </div>
+    </footer>
+
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     
     <!-- App Script -->
     <script src="app.js"></script>
+    <script>
+    (function(){
+    	const links = document.querySelectorAll('.site-nav__link');
+    	links.forEach(link => {
+    		link.addEventListener('click', (e) => {
+    			e.preventDefault();
+    			const target = link.getAttribute('data-target');
+    			if (!target) return;
+    			if (target === 'landing') {
+    				// Simula voltar para a tela inicial sem quebrar JS existente
+    				Object.values({landing: document.getElementById('landing-screen'), createRoom: document.getElementById('create-room-screen'), joinRoom: document.getElementById('join-room-screen'), game: document.getElementById('game-screen')}).forEach(s => s.classList.remove('active'));
+    				document.getElementById('landing-screen').classList.add('active');
+    			}
+    			if (target === 'createRoom') {
+    				Object.values({landing: document.getElementById('landing-screen'), createRoom: document.getElementById('create-room-screen'), joinRoom: document.getElementById('join-room-screen'), game: document.getElementById('game-screen')}).forEach(s => s.classList.remove('active'));
+    				document.getElementById('create-room-screen').classList.add('active');
+    			}
+    			if (target === 'joinRoom') {
+    				Object.values({landing: document.getElementById('landing-screen'), createRoom: document.getElementById('create-room-screen'), joinRoom: document.getElementById('join-room-screen'), game: document.getElementById('game-screen')}).forEach(s => s.classList.remove('active'));
+    				document.getElementById('join-room-screen').classList.add('active');
+    			}
+    		});
+    	});
+    })();
+    </script>
 </body>
 </html>
 
