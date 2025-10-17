@@ -1,689 +1,756 @@
-// ========================================
-// CONFIGURAÇÃO DO FIREBASE
-// ========================================
-// IMPORTANTE: Substitua esta configuração pela sua própria configuração do Firebase
-// Obtenha em: Firebase Console > Project Settings > Your apps > Firebase SDK snippet > Config
-const firebaseConfig = {
-    apiKey: "SUA_API_KEY",
-    authDomain: "SEU_PROJECT_ID.firebaseapp.com",
-    databaseURL: "https://SEU_PROJECT_ID-default-rtdb.firebaseio.com",
-    projectId: "SEU_PROJECT_ID",
-    storageBucket: "SEU_PROJECT_ID.appspot.com",
-    messagingSenderId: "SEU_MESSAGING_SENDER_ID",
-    appId: "SEU_APP_ID"
-};
+/* ========================================
+   RESET E ESTILOS GLOBAIS
+   ======================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
-// Inicializar Firebase
-firebase.initializeApp(firebaseConfig);
-const database = firebase.database();
+body {
+    font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+    min-height: 100vh;
+    color: #2C3E50;
+    position: relative;
+}
 
-// ========================================
-// VARIÁVEIS GLOBAIS
-// ========================================
-let currentUser = null;
-let currentRoom = null;
-let currentRoomId = null;
-let playerCard = [];
-let deckData = null;
-let roomRef = null;
-let playersRef = null;
-let stateRef = null;
-let chatRef = null;
+/* Padrão de fundo decorativo */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+}
 
-// ========================================
-// ELEMENTOS DO DOM
-// ========================================
-const screens = {
-    landing: document.getElementById('landing-screen'),
-    createRoom: document.getElementById('create-room-screen'),
-    joinRoom: document.getElementById('join-room-screen'),
-    game: document.getElementById('game-screen')
-};
+/* ========================================
+   TELAS
+   ======================================== */
+.screen {
+    display: none;
+    min-height: 100vh;
+    padding: 20px;
+    position: relative;
+    z-index: 1;
+}
 
-const elements = {
-    // Landing
-    usernameInput: document.getElementById('username'),
-    createRoomBtn: document.getElementById('create-room-btn'),
-    joinRoomBtn: document.getElementById('join-room-btn'),
-    
-    // Create Room
-    roomNameInput: document.getElementById('room-name'),
-    roomPasswordInput: document.getElementById('room-password'),
-    maxPlayersInput: document.getElementById('max-players'),
-    deckSelect: document.getElementById('deck-select'),
-    confirmCreateBtn: document.getElementById('confirm-create-btn'),
-    cancelCreateBtn: document.getElementById('cancel-create-btn'),
-    
-    // Join Room
-    joinRoomIdInput: document.getElementById('join-room-id'),
-    joinRoomPasswordInput: document.getElementById('join-room-password'),
-    confirmJoinBtn: document.getElementById('confirm-join-btn'),
-    cancelJoinBtn: document.getElementById('cancel-join-btn'),
-    
-    // Game
-    currentRoomName: document.getElementById('current-room-name'),
-    currentPlayers: document.getElementById('current-players'),
-    maxPlayersCount: document.getElementById('max-players-count'),
-    copyLinkBtn: document.getElementById('copy-link-btn'),
-    leaveRoomBtn: document.getElementById('leave-room-btn'),
-    bingoCard: document.getElementById('bingo-card'),
-    bingoBtn: document.getElementById('bingo-btn'),
-    playersList: document.getElementById('players-list'),
-    eventsLog: document.getElementById('events-log'),
-    
-    // Chat
-    chatMessages: document.getElementById('chat-messages'),
-    chatInput: document.getElementById('chat-input'),
-    sendMessageBtn: document.getElementById('send-message-btn'),
-    
-    // Modal e Toast
-    notificationModal: document.getElementById('notification-modal'),
-    notificationMessage: document.getElementById('notification-message'),
-    closeNotificationBtn: document.getElementById('close-notification-btn'),
-    toast: document.getElementById('toast')
-};
+.screen.active {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 
-// ========================================
-// CARREGAR DECK
-// ========================================
-async function loadDeck(deckName) {
-    try {
-        const response = await fetch(`decks/${deckName}.json`);
-        if (!response.ok) throw new Error('Deck não encontrado');
-        deckData = await response.json();
-        return deckData;
-    } catch (error) {
-        showToast('Erro ao carregar deck: ' + error.message, 'error');
-        return null;
+/* ========================================
+   CONTAINER
+   ======================================== */
+.container {
+    width: 100%;
+    max-width: 500px;
+    text-align: center;
+}
+
+/* ========================================
+   TIPOGRAFIA
+   ======================================== */
+h1 {
+    color: white;
+    font-size: 2.8rem;
+    margin-bottom: 30px;
+    text-shadow: 
+        3px 3px 0px rgba(0, 0, 0, 0.1),
+        -1px -1px 0px rgba(255, 255, 255, 0.1);
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+h2 {
+    color: #2C3E50;
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+    font-weight: 700;
+}
+
+h3 {
+    color: #34495E;
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+/* ========================================
+   CARDS
+   ======================================== */
+.card {
+    background: white;
+    border-radius: 20px;
+    padding: 35px;
+    box-shadow: 
+        0 10px 30px rgba(0, 0, 0, 0.15),
+        0 0 0 3px rgba(255, 255, 255, 0.1);
+    border: 3px solid #2C3E50;
+}
+
+/* ========================================
+   FORMULÁRIOS
+   ======================================== */
+.form-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #34495E;
+    font-size: 0.95rem;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 14px 16px;
+    border: 3px solid #E0E6ED;
+    border-radius: 12px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: #F8F9FA;
+    font-family: inherit;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #4A90E2;
+    background: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(74, 144, 226, 0.2);
+}
+
+.form-group input::placeholder {
+    color: #95A5A6;
+}
+
+/* ========================================
+   BOTÕES
+   ======================================== */
+.button-group {
+    display: flex;
+    gap: 12px;
+    margin-top: 25px;
+}
+
+.btn {
+    flex: 1;
+    padding: 14px 24px;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    position: relative;
+    overflow: hidden;
+    border: 3px solid transparent;
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.btn:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.btn:active {
+    transform: translateY(-1px);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #FFD93D 0%, #FFC107 100%);
+    color: #2C3E50;
+    border-color: #2C3E50;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #FFC107 0%, #FFB300 100%);
+}
+
+.btn-secondary {
+    background: #ECF0F1;
+    color: #2C3E50;
+    border-color: #BDC3C7;
+}
+
+.btn-secondary:hover {
+    background: #D5DBDB;
+}
+
+.btn-small {
+    padding: 10px 18px;
+    font-size: 0.85rem;
+}
+
+.btn-danger {
+    background: #E74C3C;
+    color: white;
+    border-color: #C0392B;
+}
+
+.btn-danger:hover {
+    background: #C0392B;
+}
+
+.btn-bingo {
+    width: 100%;
+    margin-top: 20px;
+    padding: 18px;
+    font-size: 1.5rem;
+    background: linear-gradient(135deg, #FF6B9D 0%, #C06C84 100%);
+    color: white;
+    border-color: #2C3E50;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
     }
 }
 
-// ========================================
-// NAVEGAÇÃO ENTRE TELAS
-// ========================================
-function showScreen(screenName) {
-    Object.values(screens).forEach(screen => screen.classList.remove('active'));
-    screens[screenName].classList.add('active');
+/* ========================================
+   TELA DE JOGO
+   ======================================== */
+#game-screen.active {
+    display: block;
 }
 
-// ========================================
-// FUNÇÕES DE UI - TOAST E MODAL
-// ========================================
-function showToast(message, type = 'info') {
-    elements.toast.textContent = message;
-    elements.toast.className = 'toast show ' + type;
-    setTimeout(() => {
-        elements.toast.classList.remove('show');
-    }, 3000);
+.game-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
 }
 
-function showModal(message) {
-    elements.notificationMessage.textContent = message;
-    elements.notificationModal.classList.add('active');
+/* ========================================
+   CABEÇALHO DO JOGO
+   ======================================== */
+.game-header {
+    background: white;
+    border-radius: 20px;
+    padding: 20px 30px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    border: 3px solid #2C3E50;
+    flex-wrap: wrap;
+    gap: 15px;
 }
 
-function hideModal() {
-    elements.notificationModal.classList.remove('active');
+.header-info h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: #2C3E50;
 }
 
-// ========================================
-// VALIDAÇÕES
-// ========================================
-function validateUsername(username) {
-    if (!username || username.trim() === '') {
-        showToast('Por favor, digite seu nome', 'error');
-        return false;
+.header-info p {
+    margin: 5px 0 0 0;
+    color: #7F8C8D;
+    font-weight: 600;
+}
+
+.header-actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* ========================================
+   ÁREA PRINCIPAL DO JOGO
+   ======================================== */
+.game-main {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 20px;
+}
+
+/* ========================================
+   ÁREA DA CARTELA
+   ======================================== */
+.card-area {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    border: 3px solid #2C3E50;
+}
+
+.card-area h3 {
+    text-align: center;
+    color: #2C3E50;
+    margin-bottom: 25px;
+    font-size: 1.5rem;
+}
+
+/* ========================================
+   CARTELA DE BINGO
+   ======================================== */
+.bingo-card {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.bingo-square {
+    aspect-ratio: 1;
+    background: linear-gradient(135deg, #E74C3C 0%, #C0392B 100%);
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    user-select: none;
+    border: 4px solid #2C3E50;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+    position: relative;
+}
+
+.bingo-square::after {
+    content: '';
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    right: 8px;
+    bottom: 8px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+    pointer-events: none;
+}
+
+.bingo-square:hover {
+    transform: scale(1.08) rotate(2deg);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+}
+
+.bingo-square.marked {
+    background: linear-gradient(135deg, #2ECC71 0%, #27AE60 100%);
+}
+
+.bingo-square:active {
+    transform: scale(0.95);
+}
+
+/* ========================================
+   SIDEBAR
+   ======================================== */
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.players-panel,
+.events-panel,
+.chat-panel {
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    border: 3px solid #2C3E50;
+}
+
+.players-panel {
+    flex: 0 0 auto;
+}
+
+.events-panel {
+    flex: 0 0 auto;
+    min-height: 200px;
+}
+
+.chat-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 300px;
+}
+
+/* ========================================
+   LISTA DE JOGADORES
+   ======================================== */
+#players-list {
+    list-style: none;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+#players-list li {
+    padding: 12px 15px;
+    margin-bottom: 10px;
+    background: linear-gradient(135deg, #ECF0F1 0%, #D5DBDB 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    border: 2px solid #BDC3C7;
+    transition: all 0.3s ease;
+}
+
+#players-list li:hover {
+    transform: translateX(5px);
+    border-color: #4A90E2;
+}
+
+#players-list li.winner {
+    background: linear-gradient(135deg, #FFD93D 0%, #FFC107 100%);
+    font-weight: bold;
+    border-color: #2C3E50;
+    animation: winnerGlow 1.5s infinite;
+}
+
+@keyframes winnerGlow {
+    0%, 100% {
+        box-shadow: 0 0 10px rgba(255, 217, 61, 0.5);
     }
-    return true;
-}
-
-function validateRoomName(roomName) {
-    if (!roomName || roomName.trim() === '') {
-        showToast('Por favor, digite o nome da sala', 'error');
-        return false;
-    }
-    return true;
-}
-
-// ========================================
-// CRIAR SALA
-// ========================================
-async function createRoom() {
-    const username = elements.usernameInput.value.trim();
-    const roomName = elements.roomNameInput.value.trim();
-    const password = elements.roomPasswordInput.value;
-    const maxPlayers = parseInt(elements.maxPlayersInput.value);
-    const deck = elements.deckSelect.value;
-    
-    if (!validateUsername(username) || !validateRoomName(roomName)) return;
-    
-    if (maxPlayers < 2 || maxPlayers > 20) {
-        showToast('Número de jogadores deve ser entre 2 e 20', 'error');
-        return;
-    }
-    
-    // Carregar deck
-    const deckLoaded = await loadDeck(deck);
-    if (!deckLoaded) return;
-    
-    currentUser = username;
-    
-    // Criar sala no Firebase
-    const newRoomRef = database.ref('rooms').push();
-    currentRoomId = newRoomRef.key;
-    
-    const roomData = {
-        name: roomName,
-        hasPassword: password !== '',
-        passwordHash: password ? simpleHash(password) : null,
-        maxPlayers: maxPlayers,
-        deck: deck,
-        createdAt: Date.now(),
-        started: false
-    };
-    
-    try {
-        await newRoomRef.set(roomData);
-        await joinRoomById(currentRoomId, password, true);
-    } catch (error) {
-        showToast('Erro ao criar sala: ' + error.message, 'error');
-    }
-}
-
-// ========================================
-// ENTRAR EM SALA
-// ========================================
-async function joinRoom() {
-    const username = elements.usernameInput.value.trim();
-    const roomId = elements.joinRoomIdInput.value.trim();
-    const password = elements.joinRoomPasswordInput.value;
-    
-    if (!validateUsername(username)) return;
-    if (!roomId) {
-        showToast('Por favor, digite o ID da sala', 'error');
-        return;
-    }
-    
-    currentUser = username;
-    await joinRoomById(roomId, password, false);
-}
-
-async function joinRoomById(roomId, password, isCreator) {
-    try {
-        // Buscar dados da sala
-        const roomSnapshot = await database.ref(`rooms/${roomId}`).once('value');
-        
-        if (!roomSnapshot.exists()) {
-            showToast('Sala não encontrada', 'error');
-            return;
-        }
-        
-        const roomData = roomSnapshot.val();
-        currentRoom = roomData;
-        currentRoomId = roomId;
-        
-        // Verificar senha
-        if (roomData.hasPassword) {
-            if (!password) {
-                showToast('Esta sala requer senha', 'error');
-                return;
-            }
-            if (simpleHash(password) !== roomData.passwordHash) {
-                showToast('Senha incorreta', 'error');
-                return;
-            }
-        }
-        
-        // Verificar número de jogadores
-        const playersSnapshot = await database.ref(`rooms/${roomId}/players`).once('value');
-        const players = playersSnapshot.val() || {};
-        const playerCount = Object.keys(players).length;
-        
-        if (playerCount >= roomData.maxPlayers) {
-            showToast('Sala cheia', 'error');
-            return;
-        }
-        
-        // Verificar nome duplicado
-        const usernames = Object.values(players).map(p => p.username);
-        if (usernames.includes(currentUser)) {
-            showToast('Nome de usuário já em uso nesta sala', 'error');
-            return;
-        }
-        
-        // Carregar deck
-        const deckLoaded = await loadDeck(roomData.deck);
-        if (!deckLoaded) return;
-        
-        // Adicionar jogador à sala
-        const playerRef = database.ref(`rooms/${roomId}/players`).push();
-        const playerId = playerRef.key;
-        
-        // Gerar cartela
-        playerCard = generateCard(deckData.options, players);
-        
-        const playerData = {
-            username: currentUser,
-            joinedAt: Date.now(),
-            card: playerCard,
-            marks: [false, false, false, false],
-            isWinner: false
-        };
-        
-        await playerRef.set(playerData);
-        
-        // Configurar onDisconnect
-        playerRef.onDisconnect().remove();
-        
-        // Configurar listeners
-        setupRoomListeners(roomId, playerId);
-        
-        // Ir para tela de jogo
-        showScreen('game');
-        updateGameUI();
-        renderCard();
-        addEvent(`Você entrou na sala`);
-        
-    } catch (error) {
-        showToast('Erro ao entrar na sala: ' + error.message, 'error');
-    }
-}
-
-// ========================================
-// GERAR CARTELA
-// ========================================
-function generateCard(options, existingPlayers) {
-    // Embaralhar opções
-    const shuffled = [...options].sort(() => Math.random() - 0.5);
-    
-    // Tentar gerar cartela única
-    let attempts = 0;
-    let card = null;
-    
-    while (attempts < 10) {
-        card = shuffled.slice(0, 4);
-        
-        // Verificar se é única
-        const existingCards = Object.values(existingPlayers).map(p => p.card);
-        const isDuplicate = existingCards.some(existingCard => 
-            JSON.stringify(existingCard.sort()) === JSON.stringify(card.sort())
-        );
-        
-        if (!isDuplicate) break;
-        
-        // Tentar novamente
-        shuffled.sort(() => Math.random() - 0.5);
-        attempts++;
-    }
-    
-    return card;
-}
-
-// ========================================
-// RENDERIZAR CARTELA
-// ========================================
-function renderCard() {
-    elements.bingoCard.innerHTML = '';
-    
-    playerCard.forEach((option, index) => {
-        const square = document.createElement('div');
-        square.className = 'bingo-square';
-        square.textContent = option;
-        square.dataset.index = index;
-        
-        square.addEventListener('click', () => toggleMark(index));
-        
-        elements.bingoCard.appendChild(square);
-    });
-}
-
-// ========================================
-// MARCAR/DESMARCAR QUADRADO
-// ========================================
-async function toggleMark(index) {
-    if (!currentRoomId) return;
-    
-    // Buscar estado atual
-    const playerSnapshot = await database.ref(`rooms/${currentRoomId}/players`)
-        .orderByChild('username')
-        .equalTo(currentUser)
-        .once('value');
-    
-    if (!playerSnapshot.exists()) return;
-    
-    const playerId = Object.keys(playerSnapshot.val())[0];
-    const playerData = playerSnapshot.val()[playerId];
-    
-    // Verificar se já ganhou
-    if (playerData.isWinner) {
-        showToast('Você já fez BINGO!', 'info');
-        return;
-    }
-    
-    // Alternar marca
-    const marks = playerData.marks || [false, false, false, false];
-    marks[index] = !marks[index];
-    
-    // Atualizar no Firebase
-    await database.ref(`rooms/${currentRoomId}/players/${playerId}/marks`).set(marks);
-    
-    // Atualizar UI local
-    updateCardUI(marks);
-    
-    // Verificar se completou
-    checkBingo(marks, playerId);
-}
-
-function updateCardUI(marks) {
-    const squares = elements.bingoCard.querySelectorAll('.bingo-square');
-    squares.forEach((square, index) => {
-        if (marks[index]) {
-            square.classList.add('marked');
-        } else {
-            square.classList.remove('marked');
-        }
-    });
-}
-
-// ========================================
-// VERIFICAR BINGO
-// ========================================
-function checkBingo(marks, playerId) {
-    const allMarked = marks.every(mark => mark === true);
-    
-    if (allMarked) {
-        elements.bingoBtn.style.display = 'block';
-        elements.bingoBtn.onclick = () => declareBingo(playerId);
-    } else {
-        elements.bingoBtn.style.display = 'none';
+    50% {
+        box-shadow: 0 0 20px rgba(255, 217, 61, 0.8);
     }
 }
 
-// ========================================
-// DECLARAR BINGO
-// ========================================
-async function declareBingo(playerId) {
-    if (!currentRoomId) return;
-    
-    try {
-        // Verificar novamente no servidor
-        const playerSnapshot = await database.ref(`rooms/${currentRoomId}/players/${playerId}`).once('value');
-        const playerData = playerSnapshot.val();
-        
-        if (!playerData) return;
-        
-        const marks = playerData.marks || [false, false, false, false];
-        const allMarked = marks.every(mark => mark === true);
-        
-        if (!allMarked) {
-            showToast('Você precisa marcar todos os quadrados!', 'error');
-            return;
-        }
-        
-        // Marcar como vencedor
-        await database.ref(`rooms/${currentRoomId}/players/${playerId}/isWinner`).set(true);
-        
-        // Registrar vitória no estado da sala
-        await database.ref(`rooms/${currentRoomId}/state/winner`).set({
-            playerId: playerId,
-            username: currentUser,
-            timestamp: Date.now()
-        });
-        
-        // Notificar todos
-        const message = `O jogador(a) ${currentUser} BINGOOOUUUUUUUU!!!!!`;
-        showModal(message);
-        
-    } catch (error) {
-        showToast('Erro ao declarar BINGO: ' + error.message, 'error');
+#players-list li::before {
+    content: '👤';
+    font-size: 1.2rem;
+}
+
+/* ========================================
+   LOG DE EVENTOS
+   ======================================== */
+#events-log {
+    max-height: 250px;
+    overflow-y: auto;
+    font-size: 0.9rem;
+}
+
+.event-item {
+    padding: 10px 12px;
+    margin-bottom: 10px;
+    background: #F8F9FA;
+    border-radius: 10px;
+    border-left: 4px solid #4A90E2;
+    transition: all 0.3s ease;
+}
+
+.event-item:hover {
+    background: #ECF0F1;
+    transform: translateX(3px);
+}
+
+.event-item.bingo-event {
+    background: linear-gradient(135deg, #FFE5EC 0%, #FFD1DC 100%);
+    border-left-color: #FF6B9D;
+    font-weight: bold;
+    animation: eventPulse 0.5s ease;
+}
+
+@keyframes eventPulse {
+    0% {
+        transform: scale(0.95);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
     }
 }
 
-// ========================================
-// LISTENERS DA SALA
-// ========================================
-function setupRoomListeners(roomId, playerId) {
-    // Listener de jogadores
-    playersRef = database.ref(`rooms/${roomId}/players`);
-    playersRef.on('value', (snapshot) => {
-        updatePlayersList(snapshot.val() || {});
-        updatePlayersCount(snapshot.val() || {});
-    });
-    
-    // Listener de estado (vencedor)
-    stateRef = database.ref(`rooms/${roomId}/state/winner`);
-    stateRef.on('value', (snapshot) => {
-        if (snapshot.exists()) {
-            const winner = snapshot.val();
-            const message = `O jogador(a) ${winner.username} BINGOOOUUUUUUUU!!!!!`;
-            showModal(message);
-            addEvent(message, true);
-        }
-    });
-    
-    // Listener de marcações do próprio jogador
-    database.ref(`rooms/${roomId}/players/${playerId}/marks`).on('value', (snapshot) => {
-        if (snapshot.exists()) {
-            const marks = snapshot.val();
-            updateCardUI(marks);
-            checkBingo(marks, playerId);
-        }
-    });
-    
-    // Listener de chat
-    chatRef = database.ref(`rooms/${roomId}/chat`);
-    chatRef.on('child_added', (snapshot) => {
-        if (snapshot.exists()) {
-            const message = snapshot.val();
-            displayChatMessage(message);
-        }
-    });
+.event-timestamp {
+    color: #95A5A6;
+    font-size: 0.75rem;
+    margin-left: 5px;
 }
 
-// ========================================
-// ATUALIZAR UI DO JOGO
-// ========================================
-function updateGameUI() {
-    elements.currentRoomName.textContent = currentRoom.name;
-    elements.maxPlayersCount.textContent = currentRoom.maxPlayers;
+/* ========================================
+   CHAT PANEL
+   ======================================== */
+.chat-messages {
+    flex: 1;
+    max-height: 300px;
+    overflow-y: auto;
+    margin-bottom: 15px;
+    padding: 12px;
+    background: #F8F9FA;
+    border-radius: 12px;
+    border: 2px solid #E0E6ED;
 }
 
-function updatePlayersList(players) {
-    elements.playersList.innerHTML = '';
-    
-    Object.entries(players).forEach(([id, player]) => {
-        const li = document.createElement('li');
-        li.textContent = player.username;
-        
-        if (player.isWinner) {
-            li.classList.add('winner');
-            li.textContent += ' 🏆';
-        }
-        
-        elements.playersList.appendChild(li);
-    });
+.chat-message {
+    margin-bottom: 12px;
+    padding: 10px 14px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    border: 2px solid #ECF0F1;
+    transition: all 0.3s ease;
+    animation: messageSlide 0.3s ease;
 }
 
-function updatePlayersCount(players) {
-    elements.currentPlayers.textContent = Object.keys(players).length;
-}
-
-// ========================================
-// LOG DE EVENTOS
-// ========================================
-function addEvent(message, isBingo = false) {
-    const eventDiv = document.createElement('div');
-    eventDiv.className = 'event-item' + (isBingo ? ' bingo-event' : '');
-    
-    const time = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-    eventDiv.innerHTML = `${message} <span class="event-timestamp">${time}</span>`;
-    
-    elements.eventsLog.insertBefore(eventDiv, elements.eventsLog.firstChild);
-}
-
-// ========================================
-// CHAT
-// ========================================
-async function sendChatMessage() {
-    const message = elements.chatInput.value.trim();
-    
-    if (!message || !currentRoomId || !currentUser) return;
-    
-    const chatMessage = {
-        username: currentUser,
-        text: message,
-        timestamp: Date.now()
-    };
-    
-    try {
-        await database.ref(`rooms/${currentRoomId}/chat`).push(chatMessage);
-        elements.chatInput.value = '';
-    } catch (error) {
-        showToast('Erro ao enviar mensagem: ' + error.message, 'error');
+@keyframes messageSlide {
+    from {
+        transform: translateX(-10px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
     }
 }
 
-function displayChatMessage(message) {
-    const messageDiv = document.createElement('div');
-    messageDiv.className = 'chat-message';
-    
-    const time = new Date(message.timestamp).toLocaleTimeString('pt-BR', { 
-        hour: '2-digit', 
-        minute: '2-digit' 
-    });
-    
-    messageDiv.innerHTML = `
-        <div class="chat-message-header">
-            <span class="chat-username">${message.username}</span>
-            <span class="chat-timestamp">${time}</span>
-        </div>
-        <div class="chat-message-text">${escapeHtml(message.text)}</div>
-    `;
-    
-    elements.chatMessages.appendChild(messageDiv);
-    
-    // Auto-scroll para a última mensagem
-    elements.chatMessages.scrollTop = elements.chatMessages.scrollHeight;
+.chat-message:hover {
+    border-color: #4A90E2;
+    transform: translateX(3px);
 }
 
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
+.chat-message-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
 }
 
-// ========================================
-// COPIAR LINK DA SALA
-// ========================================
-function copyRoomLink() {
-    const link = `${window.location.origin}${window.location.pathname}?room=${currentRoomId}`;
-    
-    navigator.clipboard.writeText(link).then(() => {
-        showToast('Link copiado!', 'success');
-    }).catch(() => {
-        showToast('Erro ao copiar link', 'error');
-    });
+.chat-username {
+    font-weight: 700;
+    color: #4A90E2;
+    font-size: 0.9rem;
 }
 
-// ========================================
-// SAIR DA SALA
-// ========================================
-async function leaveRoom() {
-    if (!currentRoomId) return;
-    
-    try {
-        // Remover jogador
-        const playerSnapshot = await database.ref(`rooms/${currentRoomId}/players`)
-            .orderByChild('username')
-            .equalTo(currentUser)
-            .once('value');
-        
-        if (playerSnapshot.exists()) {
-            const playerId = Object.keys(playerSnapshot.val())[0];
-            await database.ref(`rooms/${currentRoomId}/players/${playerId}`).remove();
-        }
-        
-        // Limpar listeners
-        if (playersRef) playersRef.off();
-        if (stateRef) stateRef.off();
-        if (chatRef) chatRef.off();
-        
-        // Resetar variáveis
-        currentRoom = null;
-        currentRoomId = null;
-        playerCard = [];
-        
-        // Voltar para tela inicial
-        showScreen('landing');
-        showToast('Você saiu da sala', 'info');
-        
-    } catch (error) {
-        showToast('Erro ao sair da sala: ' + error.message, 'error');
+.chat-timestamp {
+    color: #95A5A6;
+    font-size: 0.75rem;
+}
+
+.chat-message-text {
+    color: #2C3E50;
+    font-size: 0.9rem;
+    word-wrap: break-word;
+    line-height: 1.4;
+}
+
+.chat-input-container {
+    display: flex;
+    gap: 10px;
+}
+
+.chat-input-container input {
+    flex: 1;
+    padding: 12px 16px;
+    border: 3px solid #E0E6ED;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    background: #F8F9FA;
+    transition: all 0.3s ease;
+}
+
+.chat-input-container input:focus {
+    outline: none;
+    border-color: #4A90E2;
+    background: white;
+    box-shadow: 0 4px 12px rgba(74, 144, 226, 0.2);
+}
+
+.chat-input-container button {
+    padding: 12px 20px;
+}
+
+/* ========================================
+   MODAL
+   ======================================== */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(44, 62, 80, 0.8);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+}
+
+.modal.active {
+    display: flex;
+    animation: modalFadeIn 0.3s ease;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
     }
 }
 
-// ========================================
-// HASH SIMPLES (NÃO USAR EM PRODUÇÃO)
-// ========================================
-function simpleHash(str) {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-        const char = str.charCodeAt(i);
-        hash = ((hash << 5) - hash) + char;
-        hash = hash & hash;
-    }
-    return hash.toString();
+.modal-content {
+    background: white;
+    border-radius: 25px;
+    padding: 50px;
+    max-width: 500px;
+    text-align: center;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+    border: 4px solid #2C3E50;
+    animation: modalSlideIn 0.4s ease;
 }
 
-// ========================================
-// EVENT LISTENERS
-// ========================================
-// Landing
-elements.createRoomBtn.addEventListener('click', () => {
-    if (validateUsername(elements.usernameInput.value.trim())) {
-        showScreen('createRoom');
+@keyframes modalSlideIn {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
     }
-});
-
-elements.joinRoomBtn.addEventListener('click', () => {
-    if (validateUsername(elements.usernameInput.value.trim())) {
-        showScreen('joinRoom');
+    to {
+        transform: translateY(0);
+        opacity: 1;
     }
-});
+}
 
-// Create Room
-elements.confirmCreateBtn.addEventListener('click', createRoom);
-elements.cancelCreateBtn.addEventListener('click', () => showScreen('landing'));
+.modal-content p {
+    font-size: 1.8rem;
+    margin-bottom: 30px;
+    color: #2C3E50;
+    font-weight: 700;
+}
 
-// Join Room
-elements.confirmJoinBtn.addEventListener('click', joinRoom);
-elements.cancelJoinBtn.addEventListener('click', () => showScreen('landing'));
+/* ========================================
+   TOAST
+   ======================================== */
+.toast {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: #2C3E50;
+    color: white;
+    padding: 16px 28px;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.3s ease;
+    z-index: 999;
+    font-weight: 600;
+    border: 3px solid white;
+}
 
-// Game
-elements.copyLinkBtn.addEventListener('click', copyRoomLink);
-elements.leaveRoomBtn.addEventListener('click', leaveRoom);
+.toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
 
-// Chat
-elements.sendMessageBtn.addEventListener('click', sendChatMessage);
-elements.chatInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        sendChatMessage();
+.toast.success {
+    background: #2ECC71;
+    border-color: #27AE60;
+}
+
+.toast.error {
+    background: #E74C3C;
+    border-color: #C0392B;
+}
+
+/* ========================================
+   RESPONSIVIDADE
+   ======================================== */
+@media (max-width: 768px) {
+    h1 {
+        font-size: 2.2rem;
     }
-});
 
-// Modal
-elements.closeNotificationBtn.addEventListener('click', hideModal);
-
-// ========================================
-// INICIALIZAÇÃO
-// ========================================
-// Verificar se há room ID na URL
-window.addEventListener('load', () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const roomId = urlParams.get('room');
-    
-    if (roomId) {
-        elements.joinRoomIdInput.value = roomId;
+    .game-main {
+        grid-template-columns: 1fr;
     }
-});
+
+    .game-header {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .header-actions {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .bingo-square {
+        font-size: 0.95rem;
+        padding: 15px;
+    }
+
+    .button-group {
+        flex-direction: column;
+    }
+
+    .toast {
+        right: 20px;
+        left: 20px;
+        bottom: 20px;
+    }
+
+    .card {
+        padding: 25px;
+    }
+}
+
+/* ========================================
+   SCROLLBAR CUSTOMIZADA
+   ======================================== */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #ECF0F1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+    border-radius: 10px;
+    border: 2px solid #ECF0F1;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #357ABD 0%, #2E6DA4 100%);
+}
 
